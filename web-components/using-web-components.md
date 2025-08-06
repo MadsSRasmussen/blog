@@ -147,7 +147,18 @@ class Component extends HTMLElement {
 }
 ```
 
-Now we are ready to write our `attatch` method:
+#### Writing the attatch method
+
+Now we are ready to write our `attatch` method. The method ends up being the core method of the entire framework and _a little long_ but not very complex. 
+The method does the following:
+
+- It takes in the url of the js file in which the component is defined. 
+- It then fetches the template.html and styles.css files relative to that location - **this crucially means that the framework is opinionated on the filestructure!**
+- Parse the css and html files - replacing relative css imports with absolutes
+- Creating a final `<template>` element housing both the styles and the inner-html of the template.html file.
+- Finally the method must attatch this element to the Shadow DOM.
+
+The resulting method can be written like so:
 
 ```js
 class Component extends HTMLElement {
@@ -204,3 +215,27 @@ class Component extends HTMLElement {
 }
 ```
 
+You might notice that the method makes a call to a `replaceRelativeCSSImports` function. This function is not defined in the above method but is rather a utility function defined like so:
+
+```js
+/**
+ * Replaces relative imports with absolute imports
+ * @param {string} content 
+ * @param {URL | string} absolutePath 
+ * @returns 
+ */
+function replaceRelativeCSSImports(content, absolutePath) {
+    absolutePath = new URL(absolutePath);
+
+    const regex = /@import\s+["']([^"']+)["'];/g;
+
+    return content.replace(regex, (_, importPath) => {
+        if (/^(https?:)?\/\//.test(importPath)) {
+            return `@import "${importPath}"`;
+        }
+        return `@import url("${(new URL(importPath, absolutePath))}");`
+    });
+}
+```
+
+Notice how the `attatch` method crucially either resolves or rejects the `readyPromise` in the end of the try- catch block.

@@ -119,7 +119,7 @@ _Firstly_, we will need to insantiate the Shadow DOM with the 'open' mode.
 _Second_, our new attatch method will be asynchronus - this means that we might end up query the Shadow DOM for for elements that are not yet loaded, resulting in errors. 
 To solve this, we will create a `ready` method that returns a promise, resolving if / when the contents are loaded and attatched.
 
-To do this, we will alter the constructor of the `Component` class.
+To do this, we will add the following to `Component` class as well as implementing the constructor.
 
 ```js
 class Component extends HTMLElement {
@@ -143,6 +143,63 @@ class Component extends HTMLElement {
             this.#rejectReady = reject;
         });
         this.ready = () => this.readyPromise;
+    }
+}
+```
+
+Now we are ready to write our `attatch` method:
+
+```js
+class Component extends HTMLElement {
+    // ...
+
+    /**
+     * Loads template.html and styles.css relative to baseUrl and attatches these to the component
+     * @param {URL | string} baseUrl 
+     */
+    async attach(baseUrl) {
+        baseUrl = new URL(baseUrl)
+        const templateUrl = new URL('template.html', baseUrl);
+        const stylesUrl = new URL('styles.css', baseUrl);
+        
+        try {
+            const [templateResult, styleResult] = await Promise.allSettled([
+                fetch(templateUrl).then(res => {
+                    if (!res.ok) throw new Error(`Failed to load template: ${templateUrl}`);
+                    return res.text();
+                }),
+                fetch(stylesUrl).then(res => {
+                    if (!res.ok) throw new Error(`Failed to load styles: ${stylesUrl}`);
+                    return res.text();
+                }),
+            ]);
+
+            if (templateResult.status !== 'fulfilled') {
+                console.warn(`Unable to load template at: ${templateUrl}`);
+            }
+
+            if (styleResult.status !== 'fulfilled') {
+                console.warn(`Unable to load styles at: ${stylesUrl}`);
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(templateResult.value ?? '', 'text/html');
+            const template = doc.querySelector('template');
+
+            if (!template) throw new Error(`No <template> tag found in ${templateUrl}`);
+
+            const replacedStyles = replaceRelativeCSSImports(styleResult.value ?? '', baseUrl);
+
+            const element = document.createElement('template');
+            element.innerHTML = `<style>${replacedStyles}</style>${template.innerHTML}`;
+            this.shadowRoot.appendChild(element.content.cloneNode(true));
+
+            this.#resolveReady();
+        } catch (error) {
+            this.#rejectReady(error);
+        }
+
+        return this.ready;
     }
 }
 ```

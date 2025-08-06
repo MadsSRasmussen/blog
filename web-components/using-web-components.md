@@ -2,7 +2,7 @@
 
 - [Introduction to Web Components](#introduction-to-web-components)
 - [Problems to solve](#problems-to-solve)
-- [Creating the Component class](#creating-the-component-class)
+- [Registering components](#registering-components)
 
 ### Introduction to Web Components
 
@@ -14,11 +14,11 @@ Lorem ipsum.
 - Syntax highlighting in modern editors
 - Efficiancy
 
-### Creating the Component class
+### Registering components
 
-#### Registering the component
+Firstly we will handle registering the actual HTMLElement - this is achieved via a call to the `customElements.define()` function. 
 
-Firstly, we will extend the standard `HTMLElement` class when creating our own _minimal framework_. Personally i do not like the `customElements.define()` call to live outside the class, so let's give our Component class a static `register` method to handle component registration:
+In order to do so we will start by creating our _tiny Web Components framework_. The framework is just a single `Component` class. In order for the `Component` class to handle registering components, we will give it a `static register`method like so:
 
 ```js
 class Component extends HTMLElement {
@@ -35,18 +35,12 @@ class Component extends HTMLElement {
 }
 ```
 
-The register method checks if the tag-name is allready defined, returning the constructor of the element if it is or `undefined` if it is not.
+The `register` method expects a `Component` class as a parameter and for that `Component`class to have a `static tag` property. 
 
-There are perhaps two things to notice allready:
-
-- **_First_**, the register method takes in a `Component` as the only parameter - this is beacuse any components we create will be extending this very `Component` class.
-
-- **_Second_**, the method checks for a static tag property on the constructor passed to the method. This tag is crucially defined on the actual component.
-
-Registering a component would then require the following:
+Now, to register a component with the tag 'some-component', the following will suffice:
 
 ```js
-class ButtonComponent extends Component {
+class SomeComponent extends Component {
     static get tag() { return 'some-component' };
     static {
         Component.register(ButtonComponent);
@@ -54,6 +48,4 @@ class ButtonComponent extends Component {
 }
 ```
 
-Here, the tag is set as a _readonly_, static property on the component class. Futhermore the component is registered in a static initialization block.
-
-#### Attatching the component
+Firstly a _static getter `tag`_ is declared, followed by a _static initialization block_ in which the component is registered via the `register` method of the `Component` class.

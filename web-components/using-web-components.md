@@ -1,6 +1,6 @@
 # Wrestling Web Components to actually work
 
-Web Components are described on _mdn_ as _"...a suite of different technologies allowing you to create reusable custom elements"_. Our goal in this article is to wrap that _"suite of different technologies"_ in a single, simple to use, class - our very own _Javascript framework_!
+Web Components are described on _mdn_ as _"...a suite of different technologies allowing you to create reusable custom elements"_. Our goal in this article is to wrap that _"suite of different technologies"_ in a single, simple to use, class - in the process creating yet another but our very own tiny _Javascript framework_!
 
 ### Problems with the suite as is
 
@@ -16,10 +16,6 @@ In order to do so we will start by creating our _tiny Web Components framework_,
 
 ```js
 class Component extends HTMLElement {
-    /**
-     * Registers a component
-     * @param {Component} component 
-     */
     static register(component) {
         if (!component.tag) throw new Error('Cannot register component without tag');
         if (!customElements.get(component.tag)) {
@@ -118,13 +114,8 @@ To do this, we will add the following to `Component` class as well as implementi
 ```js
 class Component extends HTMLElement {
     // ...
-
-    /** @type {Promise<void>} */
     readyPromise;
-    
-    /** @type {() => Promise<void>} */
     ready;
-
     #resolveReady = null;
     #rejectReady = null;
 
@@ -157,11 +148,6 @@ The resulting method can be written like so:
 ```js
 class Component extends HTMLElement {
     // ...
-
-    /**
-     * Loads template.html and styles.css relative to baseUrl and attaches these to the component
-     * @param {URL | string} baseUrl 
-     */
     async attach(baseUrl) {
         baseUrl = new URL(baseUrl)
         const templateUrl = new URL('template.html', baseUrl);
@@ -214,12 +200,6 @@ Notice how the `attach` method crucially either resolves or rejects the `readyPr
 You might also notice that the method makes a call to a `replaceRelativeCSSImports` function. This function is not defined in the above method but is rather a utility function defined like so:
 
 ```js
-/**
- * Replaces relative imports with absolute imports
- * @param {string} content 
- * @param {URL | string} absolutePath 
- * @returns 
- */
 function replaceRelativeCSSImports(content, absolutePath) {
     absolutePath = new URL(absolutePath);
 

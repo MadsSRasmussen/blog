@@ -1,6 +1,6 @@
 # Wrestling Web Components to actually work
 
-Web Components are described on _mdn_ as _"...a suite of different technologies allowing you to create reusable custom elements"_. Our goal in this article is to wrap that _"suite of different technologies"_ in a single, simple to use, class - in the process creating yet another but our very own tiny _Javascript framework_!
+Web Components are [_as described on mdn_](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) _"...a suite of different technologies allowing you to create reusable custom elements"_. Our goal in this article is to wrap that _"suite of different technologies"_ in a single, simple to use, class - in the process creating yet another but our very own tiny _Javascript framework_!
 
 ### Problems with the suite as is
 
@@ -60,7 +60,7 @@ These are intended to live in a folder structure like the following:
 
 ```
 components/
-└── button/
+└── some-component/
     ├── index.js
     ├── template.html
     └── styles.css

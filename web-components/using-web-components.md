@@ -3,6 +3,8 @@
 - [Introduction to Web Components](#introduction-to-web-components)
 - [Problems to solve](#problems-to-solve)
 - [Registering components](#registering-components)
+- [Attatching html, css and js](#attatching-html-css-and-js)
+- [Writing the attatch logic](#writing-the-attatch-logic)
 
 ### Introduction to Web Components
 
@@ -239,3 +241,20 @@ function replaceRelativeCSSImports(content, absolutePath) {
 ```
 
 Notice how the `attatch` method crucially either resolves or rejects the `readyPromise` in the end of the try- catch block.
+
+
+#### Attatching a component
+
+To use the `attatch` method in a component, one could call it in the constructor. _(This cannot be awaited in the constructor - hence the readyPromise)_:
+
+```js
+class SomeComponent extends Component {
+    // ...
+    constructor() {
+        super();
+        this.attatch(import.meta.url);
+    }
+}
+```
+
+The `import.meta.url` gives the absolute url to the location os the current js-file, allowing the `attatch` method to fetch the template.html and styles.css accordingly.

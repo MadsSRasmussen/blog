@@ -66,3 +66,12 @@ Instead we will use an approach where each component is represented via 3 differ
 - A `styles.css` file containg the css styles of the component
 - And an `index.js` file containing the `Component` class
 
+These are intended to live in a folder structure like the following:
+
+```
+components/
+└── button/
+    ├── index.js
+    ├── template.html
+    └── styles.css
+```

@@ -100,19 +100,50 @@ In my opinion one needs to be able to import a reset and css variables into the 
 An example stylesheet for the above component could be:
 
 ```css
-@import "../../styles/index.css";
-
 .content-container {
-    font-family: var(--font-family);
-    border: 2px solid var(--color-border);
+    padding: 2rem;
+    border: 1px solid black;
 }
 ```
 
-The above example imagines that the variables `--font-family` and `--color-border` are defined via the import.
 Defining styles on a class 'content-container' might seem like a bad idea, but the styles do not _bleed out_ of the Shadow DOM, so no other '.content-container' classes will be affected.
 
 ### Writing the attatch logic
 
 Organizing our files as described above is all well and good, but how would we go about actually loading the content?
 
-For that, let's define an `attatch` method on our `Component` class.
+We will end up defining an `attatch` method on our `Component` class, but first we will need to define a few things. 
+
+_Firstly_, we will need to insantiate the Shadow DOM with the 'open' mode. 
+
+_Second_, our new attatch method will be asynchronus - this means that we might end up query the Shadow DOM for for elements that are not yet loaded, resulting in errors. 
+To solve this, we will create a `ready` method that returns a promise, resolving if / when the contents are loaded and attatched.
+
+To do this, we will alter the constructor of the `Component` class.
+
+```js
+class Component extends HTMLElement {
+    // ...
+
+    /** @type {Promise<void>} */
+    readyPromise;
+    
+    /** @type {() => Promise<void>} */
+    ready;
+
+    #resolveReady = null;
+    #rejectReady = null;
+
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+
+        this.readyPromise = new Promise((resolve, reject) => {
+            this.#resolveReady = resolve;
+            this.#rejectReady = reject;
+        });
+        this.ready = () => this.readyPromise;
+    }
+}
+```
+

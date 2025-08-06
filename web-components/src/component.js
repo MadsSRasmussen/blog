@@ -31,7 +31,7 @@ export class Component extends HTMLElement {
         this.readyPromise = new Promise((resolve, reject) => {
             this.#resolveReady = resolve;
             this.#rejectReady = reject;
-        })
+        });
         this.ready = () => this.readyPromise;
     }
 

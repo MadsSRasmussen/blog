@@ -48,7 +48,7 @@ class SomeComponent extends Component {
 }
 ```
 
-Firstly a _static getter `tag`_ is declared, followed by a _static initialization block_ in which the component is registered via the `register` method of the `Component` class.
+A _static getter `tag`_ is declared, followed by a _static initialization block_ in which the component is registered via the `register` method of the `Component` class.
 
 ### Attatching html, css and js
 
@@ -75,3 +75,44 @@ components/
     ├── template.html
     └── styles.css
 ```
+
+#### The template.html
+
+The `template.html` documents contains the actual html of the component. This will eventually be the html-contents of the _shadow DOM_ og our Web Component. The way I choose to implement it, the html-file will contain a root template tag - no metadata og DOCTYPE or anything of that nature. 
+
+The following is an example of such a template.html file:
+
+```html
+<template>
+    <div class="content-container">
+        <slot></slot>
+    </div>
+</template>
+```
+
+The above snippit is perfectly valid html and can crucially be parsed by an instance of `DOMParser`. Notice the *slot* tag - this is a special tag that acts as a placeholder for any html content that will eventually be placed within the opening- and closing tags of the resulting component.
+
+#### The styles.css
+
+The `styles.css` file will house the css styles of the component. This will also live inside the Shadow DOM - so the component itself will be isolated from surrounding css.
+In my opinion one needs to be able to import a reset and css variables into the `styles.css` file of the component for this not to be a disadvantage. _We will make sure we can import relative stylesheets into the component stylesheets at a later point._
+
+An example stylesheet for the above component could be:
+
+```css
+@import "../../styles/index.css";
+
+.content-container {
+    font-family: var(--font-family);
+    border: 2px solid var(--color-border);
+}
+```
+
+The above example imagines that the variables `--font-family` and `--color-border` are defined via the import.
+Defining styles on a class 'content-container' might seem like a bad idea, but the styles do not _bleed out_ of the Shadow DOM, so no other '.content-container' classes will be affected.
+
+### Writing the attatch logic
+
+Organizing our files as described above is all well and good, but how would we go about actually loading the content?
+
+For that, let's define an `attatch` method on our `Component` class.

@@ -18,7 +18,7 @@ Lorem ipsum.
 
 Firstly we will handle registering the actual HTMLElement - this is achieved via a call to the `customElements.define()` function. 
 
-In order to do so we will start by creating our _tiny Web Components framework_. The framework is just a single `Component` class. In order for the `Component` class to handle registering components, we will give it a `static register`method like so:
+In order to do so we will start by creating our _tiny Web Components framework_, which is just a single class we will call `Component`. To handle registering components, we will give it a static register method like so:
 
 ```js
 class Component extends HTMLElement {
@@ -49,3 +49,20 @@ class SomeComponent extends Component {
 ```
 
 Firstly a _static getter `tag`_ is declared, followed by a _static initialization block_ in which the component is registered via the `register` method of the `Component` class.
+
+### Attatching html, css and js
+
+In order for our components to have any content we will need to specify some _html_, possibly som _css_ and some additional _JavaScript_ functionality.
+
+The _JavaScript_ part is easy - since we extended the `HTMLElement` class in our original `Component` class, we have access to the necessary api's directly in our subclass.
+
+The _html_ and _css_ parts are a bit more tricky to implement in a neat fashion...
+
+There are a lot of different approaches to this - the most common of which is having both the _css_ and _html_ in the _JavaScript_ file. There are definetly advantages to having all the component code in a single file, but one will miss out on syntax highlighting and creating complex components can be cluttered in a single file - this will not cut it for our cutting edge little framework!
+
+Instead we will use an approach where each component is represented via 3 different files:
+
+- A `template.html` file containing the actual html of the component
+- A `styles.css` file containg the css styles of the component
+- And an `index.js` file containing the `Component` class
+

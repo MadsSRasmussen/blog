@@ -1,20 +1,12 @@
-### Table of contents
+# Wrestling Web Components to actually work
 
-- [Introduction to Web Components](#introduction-to-web-components)
-- [Problems to solve](#problems-to-solve)
-- [Registering components](#registering-components)
-- [Attatching html, css and js](#attatching-html-css-and-js)
-- [Writing the attatch logic](#writing-the-attatch-logic)
+Web Components are described on _mdn_ as _"...a suite of different technologies allowing you to create reusable custom elements"_. Our goal in this article is to wrap that _"suite of different technologies"_ in a single, simple to use, class - our very own _Javascript framework_!
 
-### Introduction to Web Components
+### Problems with the suite as is
 
-Lorem ipsum.
+The suite of technologies behind Web Components are very much **not** opinionated on how web components should be designed. This both gives developers great freedom to use them however they want but also very little in terms of guidance towards how they should be used.
 
-### Problems to solve
-
-- Project independence
-- Syntax highlighting in modern editors
-- Efficiancy
+In this article we will be developing a tiny little framework _(around 100 lines of Javascript)_ giving us a starting point to work with Web Components.
 
 ### Registering components
 
@@ -45,14 +37,14 @@ Now, to register a component with the tag 'some-component', the following will s
 class SomeComponent extends Component {
     static get tag() { return 'some-component' };
     static {
-        Component.register(ButtonComponent);
+        Component.register(SomeComponent);
     }
 }
 ```
 
 A _static getter `tag`_ is declared, followed by a _static initialization block_ in which the component is registered via the `register` method of the `Component` class.
 
-### Attatching html, css and js
+### Attaching html, css and js
 
 In order for our components to have any content we will need to specify some _html_, possibly som _css_ and some additional _JavaScript_ functionality.
 
@@ -80,7 +72,7 @@ components/
 
 #### The template.html
 
-The `template.html` documents contains the actual html of the component. This will eventually be the html-contents of the _shadow DOM_ og our Web Component. The way I choose to implement it, the html-file will contain a root template tag - no metadata og DOCTYPE or anything of that nature. 
+The `template.html` documents contains the actual html of the component. This will eventually be the html-contents of the _shadow DOM_ of our Web Component. The way I choose to implement it, the html-file will contain a root template tag - no metadata or DOCTYPE or anything of that nature. 
 
 The following is an example of such a template.html file:
 
@@ -110,16 +102,16 @@ An example stylesheet for the above component could be:
 
 Defining styles on a class 'content-container' might seem like a bad idea, but the styles do not _bleed out_ of the Shadow DOM, so no other '.content-container' classes will be affected.
 
-### Writing the attatch logic
+### Writing the attach logic
 
 Organizing our files as described above is all well and good, but how would we go about actually loading the content?
 
-We will end up defining an `attatch` method on our `Component` class, but first we will need to define a few things. 
+We will end up defining an `attach` method on our `Component` class, but first we will need to define a few things. 
 
-_Firstly_, we will need to insantiate the Shadow DOM with the 'open' mode. 
+_First_, we will need to insantiate the Shadow DOM in the 'open' mode. 
 
-_Second_, our new attatch method will be asynchronus - this means that we might end up query the Shadow DOM for for elements that are not yet loaded, resulting in errors. 
-To solve this, we will create a `ready` method that returns a promise, resolving if / when the contents are loaded and attatched.
+_Second_, our new attach method will be asynchronus - this means that we might end up query the Shadow DOM for for elements that are not yet loaded, resulting in errors. 
+To solve this, we will create a `ready` method that returns a promise, resolving if / when the contents are loaded and attached.
 
 To do this, we will add the following to `Component` class as well as implementing the constructor.
 
@@ -149,16 +141,16 @@ class Component extends HTMLElement {
 }
 ```
 
-#### Writing the attatch method
+#### Writing the attach method
 
-Now we are ready to write our `attatch` method. The method ends up being the core method of the entire framework and _a little long_ but not very complex. 
+Now we are ready to write our `attach` method. The method ends up being the core method of the entire framework and _a little long_ but not very complex. 
 The method does the following:
 
 - It takes in the url of the js file in which the component is defined. 
-- It then fetches the template.html and styles.css files relative to that location - **this crucially means that the framework is opinionated on the filestructure!**
+- It then fetches the template.html and styles.css files relative to that location - **this crucially means that the framework is opinionated on filestructure**.
 - Parse the css and html files - replacing relative css imports with absolutes
-- Creating a final `<template>` element housing both the styles and the inner-html of the template.html file.
-- Finally the method must attatch this element to the Shadow DOM.
+- Creating a final `<template>` element housing both the styles and the contents of the template.html file.
+- Finally the method must attach this element to the Shadow DOM.
 
 The resulting method can be written like so:
 
@@ -167,7 +159,7 @@ class Component extends HTMLElement {
     // ...
 
     /**
-     * Loads template.html and styles.css relative to baseUrl and attatches these to the component
+     * Loads template.html and styles.css relative to baseUrl and attaches these to the component
      * @param {URL | string} baseUrl 
      */
     async attach(baseUrl) {
@@ -217,7 +209,9 @@ class Component extends HTMLElement {
 }
 ```
 
-You might notice that the method makes a call to a `replaceRelativeCSSImports` function. This function is not defined in the above method but is rather a utility function defined like so:
+Notice how the `attach` method crucially either resolves or rejects the `readyPromise` in the end of the try- catch block.
+
+You might also notice that the method makes a call to a `replaceRelativeCSSImports` function. This function is not defined in the above method but is rather a utility function defined like so:
 
 ```js
 /**
@@ -240,21 +234,18 @@ function replaceRelativeCSSImports(content, absolutePath) {
 }
 ```
 
-Notice how the `attatch` method crucially either resolves or rejects the `readyPromise` in the end of the try- catch block.
+#### Attaching a component
 
-
-#### Attatching a component
-
-To use the `attatch` method in a component, one could call it in the constructor. _(This cannot be awaited in the constructor - hence the readyPromise)_:
+To use the `attach` method in a component, one could call it in the constructor. _(This cannot be awaited in the constructor - hence the readyPromise)_:
 
 ```js
 class SomeComponent extends Component {
     // ...
     constructor() {
         super();
-        this.attatch(import.meta.url);
+        this.attach(import.meta.url);
     }
 }
 ```
 
-The `import.meta.url` gives the absolute url to the location os the current js-file, allowing the `attatch` method to fetch the template.html and styles.css accordingly.
+The `import.meta.url` gives the absolute url to the location os the current js-file, allowing the `attach` method to fetch the template.html and styles.css accordingly.
